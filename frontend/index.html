@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyOS | AI Lecture Voice-to-Notes & Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fa-solid fa-brain-circuit"></i>
+        </div>
+        <span class="brand-name">StudyOS</span>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard-view" id="nav-dashboard">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="study-view" id="nav-study" disabled>
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Study Center</span>
+        </button>
+        <button class="nav-item" data-tab="chat-view" id="nav-chat">
+          <i class="fa-solid fa-comments"></i>
+          <span>AI Chatbot</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-summary" id="user-profile-summary">
+          <div class="avatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="user-details">
+            <div class="user-name" id="profile-name">Guest User</div>
+            <div class="user-email" id="profile-email">Please login</div>
+          </div>
+        </div>
+        <button id="logout-btn" class="logout-button"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-title-area">
+          <h1 id="page-title">Dashboard</h1>
+          <p id="page-subtitle" class="subtitle">Upload lectures, search transcripts, and generate study resources.</p>
+        </div>
+        <div class="connection-status" id="connection-status">
+          <span class="status-indicator online"></span> Connected
+        </div>
+      </header>
+
+      <!-- Auth Screen Overlay (Shows when not logged in) -->
+      <section class="auth-container" id="auth-screen">
+        <div class="auth-card">
+          <div class="auth-header">
+            <div class="brand-icon-large">
+              <i class="fa-solid fa-brain-circuit"></i>
+            </div>
+            <h2>Welcome to StudyOS</h2>
+            <p>Your AI-powered lecture companion. Register or log in to get started.</p>
+          </div>
+
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-login-btn">Login</button>
+            <button class="auth-tab" id="tab-register-btn">Register</button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="login-form" class="auth-form active">
+            <div class="form-group">
+              <label for="login-email">Email Address</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="login-email" placeholder="student@university.edu" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="login-password" placeholder="••••••••" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Log In <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="register-form" class="auth-form">
+            <div class="form-group">
+              <label for="register-name">Full Name</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" id="register-name" placeholder="Alex Johnson" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="register-email">Email Address</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="register-email" placeholder="student@university.edu" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="register-password">Password</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="register-password" placeholder="••••••••" required />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Create Account <i class="fa-solid fa-user-plus"></i></button>
+          </form>
+
+          <div class="auth-status-msg" id="auth-status"></div>
+        </div>
+      </section>
+
+      <!-- App Views (Shown when logged in) -->
+      <div class="views-wrapper" id="views-container">
+        
+        <!-- View 1: Dashboard -->
+        <section class="view active" id="dashboard-view">
+          <!-- Stats Counters -->
+          <div class="dashboard-stats-row">
+            <div class="stat-card glass">
+              <div class="stat-icon"><i class="fa-solid fa-microphone"></i></div>
+              <div class="stat-meta">
+                <span class="stat-num" id="stat-total-lectures">0</span>
+                <span class="stat-label">Total Lectures</span>
+              </div>
+            </div>
+            <div class="stat-card glass">
+              <div class="stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+              <div class="stat-meta">
+                <span class="stat-num" id="stat-notes-generated">0</span>
+                <span class="stat-label">Notes Generated</span>
+              </div>
+            </div>
+            <div class="stat-card glass">
+              <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+              <div class="stat-meta">
+                <span class="stat-num" id="stat-quizzes-taken">0</span>
+                <span class="stat-label">Quizzes Generated</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <!-- Left Side: Upload & Search -->
+            <div class="col-left">
+              <!-- Upload Card -->
+              <div class="card glass upload-card">
+                <div class="card-header">
+                  <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Lecture Audio</h3>
+                </div>
+                <div class="card-body">
+                  <form id="upload-form">
+                    <div class="dropzone" id="dropzone">
+                      <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                      <p class="dropzone-text">Drag & drop lecture audio, PDF, or images here, or <span class="browse-link">browse</span></p>
+                      <span class="file-info-text">Supports MP3, WAV, M4A, PDF, PNG, JPG, JPEG (Max 100MB)</span>
+                      <input type="file" id="upload-file" accept="audio/*,application/pdf,image/*" class="file-input-hidden" />
+                    </div>
+                    <div class="selected-file-area" id="selected-file-area" style="display: none;">
+                      <div class="file-icon-badge">
+                        <i class="fa-solid fa-file-audio"></i>
+                      </div>
+                      <div class="file-meta">
+                        <div class="file-name-label" id="selected-file-name">filename.mp3</div>
+                        <div class="file-size-label" id="selected-file-size">12.5 MB</div>
+                      </div>
+                      <button type="button" class="btn-clear-file" id="btn-clear-file"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="upload-btn" disabled>
+                      Upload Lecture <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Search Card -->
+              <div class="card glass search-card">
+                <div class="card-header">
+                  <h3><i class="fa-solid fa-magnifying-glass"></i> Search Library</h3>
+                </div>
+                <div class="card-body">
+                  <div class="search-input-group">
+                    <input type="text" id="search-query" placeholder="Search for concepts, e.g. 'Virtual Memory'..." />
+                    <div class="search-buttons">
+                      <button id="search-btn" class="btn btn-secondary"><i class="fa-solid fa-font"></i> Text Search</button>
+                      <button id="semantic-search-btn" class="btn btn-accent"><i class="fa-solid fa-wand-magic-sparkles"></i> Semantic Search</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Library / History -->
+            <div class="col-right">
+              <div class="card glass library-card">
+                <div class="card-header header-with-action">
+                  <h3><i class="fa-solid fa-folder-open"></i> Lecture Library</h3>
+                  <button id="history-refresh-btn" class="btn btn-small btn-secondary"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                </div>
+                <div class="card-body">
+                  <div class="lectures-grid" id="lecture-history">
+                    <!-- Dynamic Grid of Lectures -->
+                    <div class="loading-state">
+                      <i class="fa-solid fa-spinner fa-spin"></i> Loading lecture library...
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 2: Study Center -->
+        <section class="view" id="study-view">
+          <div class="study-dashboard">
+            <div class="study-sidebar">
+              <div class="card glass active-lecture-card">
+                <div class="card-body">
+                  <div class="active-lecture-meta">
+                    <span class="lecture-label">ACTIVE LECTURE</span>
+                    <h2 class="active-lecture-title" id="study-lecture-title">No Lecture Selected</h2>
+                    <div class="lecture-meta-badges">
+                      <span class="badge" id="study-lecture-id">ID: --</span>
+                      <span class="badge" id="study-lecture-topic">Topic: --</span>
+                    </div>
+                  </div>
+                  
+                  <div class="generation-menu">
+                    <h4>AI Generation Engine</h4>
+                    <button id="transcribe-btn" class="btn btn-secondary btn-block"><i class="fa-solid fa-audio-description"></i> Transcribe Audio</button>
+                    <button id="summary-btn" class="btn btn-secondary btn-block"><i class="fa-solid fa-file-signature"></i> Generate Notes</button>
+                    
+                    <div class="quiz-generation-box">
+                      <div class="difficulty-select-wrapper">
+                        <label for="quiz-difficulty">Quiz Difficulty</label>
+                        <select id="quiz-difficulty">
+                          <option value="easy">Easy (Definitions)</option>
+                          <option value="medium" selected>Medium (Concepts)</option>
+                          <option value="hard">Hard (Advanced)</option>
+                        </select>
+                      </div>
+                      <button id="quiz-btn" class="btn btn-secondary btn-block"><i class="fa-solid fa-circle-question"></i> Generate Quiz</button>
+                    </div>
+
+                    <button id="flashcards-btn" class="btn btn-secondary btn-block"><i class="fa-solid fa-rectangle-list"></i> Generate Flashcards</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs and Content -->
+            <div class="study-content-area">
+              <div class="study-tabs">
+                <button class="study-tab active" data-content="transcript-tab-content">Transcript</button>
+                <button class="study-tab" data-content="notes-tab-content">Notes & Summary</button>
+                <button class="study-tab" data-content="flashcards-tab-content">Flashcards</button>
+                <button class="study-tab" data-content="quiz-tab-content">Interactive Quiz</button>
+                <button class="study-tab" data-content="mindmap-tab-content">Mind Map</button>
+              </div>
+
+              <!-- Tab Contents -->
+              <div class="tab-bodies">
+                
+                <!-- Transcript Content -->
+                <div class="tab-content active" id="transcript-tab-content">
+                  <div class="card glass text-display-card">
+                    <div class="card-header header-with-action">
+                      <h4>Verbatim Lecture Transcript</h4>
+                      <button id="get-transcript-btn" class="btn btn-small btn-secondary"><i class="fa-solid fa-cloud-arrow-down"></i> Reload</button>
+                    </div>
+                    <div class="card-body">
+                      <div class="transcript-text" id="study-transcript-text">
+                        Please click "Transcribe Audio" to process this lecture, or "Reload" if it's already done.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notes Content -->
+                <div class="tab-content" id="notes-tab-content">
+                  <div class="card glass text-display-card">
+                    <div class="card-header header-with-action">
+                      <h4>AI Generated Notes & Key Concepts</h4>
+                      <button id="get-notes-btn" class="btn btn-small btn-secondary"><i class="fa-solid fa-cloud-arrow-down"></i> Reload</button>
+                    </div>
+                    <div class="card-body">
+                      <div class="notes-layout">
+                        <div class="summary-section">
+                          <h5>Executive Summary</h5>
+                          <div id="study-summary-text" class="summary-box">Notes not generated yet. Click "Generate Notes" to create them.</div>
+                        </div>
+                        <div class="keypoints-section">
+                          <h5>Key Concepts & Definitions</h5>
+                          <div id="study-key-points" class="key-points-box">Notes not generated yet.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Flashcard Deck Content -->
+                <div class="tab-content" id="flashcards-tab-content">
+                  <div class="flashcards-viewer">
+                    <div class="deck-controls-top">
+                      <h4>Study Flashcards</h4>
+                      <button id="get-flashcards-btn" class="btn btn-small btn-secondary"><i class="fa-solid fa-cloud-arrow-down"></i> Reload</button>
+                    </div>
+
+                    <!-- Flashcard 3D element -->
+                    <div class="flashcard-deck-container">
+                      <div class="flashcard" id="flashcard-card">
+                        <div class="card-face front">
+                          <div class="card-inner-meta">FRONT</div>
+                          <p class="flashcard-question-text" id="card-question">What is Round Robin CPU Scheduling?</p>
+                          <span class="click-to-flip-text"><i class="fa-solid fa-arrows-rotate"></i> Click to flip</span>
+                        </div>
+                        <div class="card-face back">
+                          <div class="card-inner-meta">BACK</div>
+                          <p class="flashcard-answer-text" id="card-answer">A scheduling algorithm that allocates a fixed time quantum to each process in a cyclic fashion.</p>
+                          <span class="click-to-flip-text"><i class="fa-solid fa-arrows-rotate"></i> Click to flip</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Slide Controls -->
+                    <div class="deck-nav">
+                      <button id="card-prev-btn" class="btn btn-secondary"><i class="fa-solid fa-arrow-left"></i> Previous</button>
+                      <span class="card-indicator" id="card-indicator">0 / 0</span>
+                      <button id="card-next-btn" class="btn btn-secondary">Next <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Interactive Quiz Content -->
+                <div class="tab-content" id="quiz-tab-content">
+                  <div class="quiz-player">
+                    <div class="quiz-controls-top">
+                      <h4>Interactive Practice Quiz</h4>
+                      <button id="get-quiz-btn" class="btn btn-small btn-secondary"><i class="fa-solid fa-cloud-arrow-down"></i> Reload</button>
+                    </div>
+
+                    <div id="quiz-ready-screen" class="quiz-stage-screen">
+                      <i class="fa-solid fa-clipboard-question stage-icon"></i>
+                      <h3>Test Your Knowledge</h3>
+                      <p>Generate a quiz using the sidebar, or reload if already generated. When ready, click Start!</p>
+                      <button id="start-quiz-btn" class="btn btn-primary">Start Practice Quiz</button>
+                    </div>
+
+                    <div id="quiz-play-screen" class="quiz-stage-screen" style="display: none;">
+                      <div class="quiz-progress-bar-container">
+                        <div class="quiz-progress-fill" id="quiz-progress-fill" style="width: 20%;"></div>
+                      </div>
+                      <div class="quiz-header-meta">
+                        <span id="quiz-q-index">Question 1 of 5</span>
+                        <span id="quiz-q-score">Score: 0</span>
+                      </div>
+                      <div class="quiz-question-card">
+                        <h4 class="quiz-question-text" id="quiz-question-text">Question text goes here?</h4>
+                        <div class="quiz-options-list" id="quiz-options-list">
+                          <!-- MCQ Buttons will go here -->
+                        </div>
+                      </div>
+                      <button id="quiz-submit-next-btn" class="btn btn-primary" style="display: none;">Next Question <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div id="quiz-results-screen" class="quiz-stage-screen" style="display: none;">
+                      <i class="fa-solid fa-trophy results-icon"></i>
+                      <h3>Quiz Completed!</h3>
+                      <p>Here is your performance summary:</p>
+                      <div class="score-summary-box">
+                        <span class="score-percent" id="quiz-final-percent">80%</span>
+                        <span class="score-fraction" id="quiz-final-score">4 out of 5 Correct</span>
+                      </div>
+                      <button id="quiz-restart-btn" class="btn btn-secondary">Try Again</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Mind Map Content -->
+                <div class="tab-content" id="mindmap-tab-content">
+                  <div class="card glass text-display-card">
+                    <div class="card-header">
+                      <h4>Interactive Concept Mind Map</h4>
+                    </div>
+                    <div class="card-body mindmap-body">
+                      <div class="mindmap-container" id="mindmap-container">
+                        <!-- Mind map tree nodes will be dynamically loaded here -->
+                        <div class="mindmap-empty">
+                          <i class="fa-solid fa-diagram-project"></i>
+                          <p>Mind map is generated as part of study notes. Please click "Generate Notes" to create one.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 3: Chatbot -->
+        <section class="view" id="chat-view">
+          <div class="chat-dashboard">
+            <div class="chat-sidebar">
+              <div class="card glass chat-config-card">
+                <div class="card-header">
+                  <h3>Chat Assistant</h3>
+                </div>
+                <div class="card-body">
+                  <p class="config-help">Ask questions about your uploaded lectures. The AI will extract context and provide detailed clarifications.</p>
+                  
+                  <div class="form-group select-lecture-group">
+                    <label for="chat-lecture-select">Context Lecture</label>
+                    <select id="chat-lecture-select">
+                      <option value="">Latest uploaded lecture</option>
+                      <!-- Dynamic options -->
+                    </select>
+                  </div>
+
+                  <div class="toggle-group">
+                    <div class="toggle-container">
+                      <label class="switch">
+                        <input type="checkbox" id="use-rag" checked />
+                        <span class="slider round"></span>
+                      </label>
+                      <span class="toggle-label">Use RAG (Multi-Lecture Context)</span>
+                    </div>
+                    <p class="toggle-desc">Retrieval-Augmented Generation searches through all your transcribed lectures to find answers, rather than just the active one.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-main-area">
+              <div class="chat-messages-container" id="chat-messages">
+                <div class="message ai-message">
+                  <div class="message-bubble">
+                    Hello! I'm your AI Study Assistant. Ask me anything about your lectures! E.g. <i>"What is Round Robin CPU Scheduling?"</i>
+                  </div>
+                  <span class="message-time">System</span>
+                </div>
+              </div>
+
+              <!-- Input bar -->
+              <div class="chat-input-bar">
+                <form id="chat-form">
+                  <input type="text" id="chat-question" placeholder="Ask a question about your lectures..." required autocomplete="off" />
+                  <button type="submit" class="btn btn-primary chat-send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Global status output (hidden by default, used for toasts) -->
+  <div class="toast-notification" id="toast-notification">Notification Message</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
